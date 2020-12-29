@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/hegedustibor/htgo-tts/handlers"
 )
 
 /**
@@ -22,19 +24,19 @@ import (
 type Speech struct {
 	Folder   string
 	Language string
-	Handler handlers.PlayerInterface
+	Handler  handlers.PlayerInterface
 }
 
 // Speak downloads speech and plays it using mplayer
 func (speech *Speech) Speak(text string) error {
 
-	fileName := speech.Folder + "/" + text + ".mp3"
+	fileName := speech.Folder + "/TTS.mp3"
 
 	var err error
 	if err = speech.createFolderIfNotExists(speech.Folder); err != nil {
 		return err
 	}
-	if err = speech.downloadIfNotExists(fileName, text); err != nil {
+	if err = speech.download(fileName, text); err != nil {
 		return err
 	}
 
@@ -62,25 +64,23 @@ func (speech *Speech) createFolderIfNotExists(folder string) error {
 /**
  * Download the voice file if does not exists.
  */
-func (speech *Speech) downloadIfNotExists(fileName string, text string) error {
-	f, err := os.Open(fileName)
+func (speech *Speech) download(fileName string, text string) error {
+	url := fmt.Sprintf("http://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&q=%s&tl=%s", url.QueryEscape(text), speech.Language)
+	response, err := http.Get(url)
 	if err != nil {
-		url := fmt.Sprintf("http://translate.google.com/translate_tts?ie=UTF-8&total=1&idx=0&textlen=32&client=tw-ob&q=%s&tl=%s", url.QueryEscape(text), speech.Language)
-		response, err := http.Get(url)
-		if err != nil {
-			return err
-		}
-		defer response.Body.Close()
+		return err
+	}
+	defer response.Body.Close()
 
-		output, err := os.Create(fileName)
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(output, response.Body)
+	output, err := os.Create(fileName)
+	if err != nil {
 		return err
 	}
 
-	f.Close()
+	_, err = io.Copy(output, response.Body)
+	if err != nil {
+		return err
+	}
 	return nil
+
 }
