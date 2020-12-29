@@ -2,13 +2,12 @@ package htgotts
 
 import (
 	"fmt"
-	"github.com/hegedustibor/htgo-tts/handlers"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 
-	"github.com/hegedustibor/htgo-tts/handlers"
+	"github.com/weiztd/htgo-tts/handlers"
 )
 
 /**
